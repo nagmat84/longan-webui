@@ -47,7 +47,7 @@ header.bind = function () {
 	});
 
 	header.dom("#button_sharing_album_users").on(eventName, function () {
-		album.shareUsers(album.getID());
+		album.showShareDialog(album.getID());
 	});
 
 	header.dom("#button_share_album").on(eventName, function (e) {
@@ -319,7 +319,7 @@ header.setMode = function (mode) {
 			if (
 				!album.json ||
 				(album.json.photos.length === 0 && album.json.albums && album.json.albums.length === 0) ||
-				(!album.isUploadable() && !album.json.is_downloadable)
+				(!album.isUploadable() && !album.json.effectiveRights.is_downloadable)
 			) {
 				const e = $("#button_archive");
 				e.hide();
@@ -330,7 +330,7 @@ header.setMode = function (mode) {
 				tabindex.makeFocusable(e);
 			}
 
-			if (album.json && album.json.hasOwnProperty("is_share_button_visible") && !album.json.is_share_button_visible) {
+			if (!lychee.share_button_visible) {
 				const e = $("#button_share_album");
 				e.hide();
 				tabindex.makeUnfocusable(e);
@@ -491,7 +491,7 @@ header.setMode = function (mode) {
 				tabindex.makeUnfocusable(e);
 			}
 
-			if (photo.json && photo.json.hasOwnProperty("is_share_button_visible") && !photo.json.is_share_button_visible) {
+			if (!lychee.share_button_visible) {
 				const e = $("#button_share");
 				e.hide();
 				tabindex.makeUnfocusable(e);
@@ -507,7 +507,7 @@ header.setMode = function (mode) {
 			if (
 				!(
 					album.isUploadable() ||
-					(photo.json.hasOwnProperty("is_downloadable") ? photo.json.is_downloadable : album.json && album.json.is_downloadable)
+					(photo.json.hasOwnProperty("is_downloadable") ? photo.json.is_downloadable : album.json && album.json.effectiveRights.is_downloadable)
 				) &&
 				!(photo.json.size_variants.original.url && photo.json.size_variants.original.url !== "")
 			) {

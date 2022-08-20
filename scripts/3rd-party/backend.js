@@ -42,7 +42,6 @@
  * @property {?string}      live_photo_checksum
  * @property {SizeVariants} size_variants
  * @property {boolean}      is_downloadable
- * @property {boolean}      is_share_button_visible
  * @property {?string}      [next_photo_id]
  * @property {?string}      [previous_photo_id]
  */
@@ -79,54 +78,46 @@
 /**
  * @typedef Album
  *
- * @property {string}  id
- * @property {string}  parent_id
- * @property {string}  created_at
- * @property {string}  updated_at
- * @property {string}  title
- * @property {?string} description
- * @property {string}  license
- * @property {Photo[]} photos
- * @property {Album[]} [albums]
- * @property {?string} cover_id
- * @property {?Thumb}  thumb
- * @property {string}  [owner_name] optional, only shown in authenticated mode
- * @property {boolean} is_public
- * @property {boolean} is_downloadable
- * @property {boolean} is_share_button_visible
- * @property {boolean} is_nsfw
- * @property {boolean} grants_full_photo
- * @property {boolean} requires_link
- * @property {boolean} has_password
- * @property {boolean} has_albums
- * @property {?string} min_taken_at
- * @property {?string} max_taken_at
+ * @property {string}            id
+ * @property {string}            parent_id
+ * @property {string}            created_at
+ * @property {string}            updated_at
+ * @property {string}            title
+ * @property {?string}           description
+ * @property {string}            license
+ * @property {Photo[]}           photos
+ * @property {Album[]}           [albums]
+ * @property {?string}           cover_id
+ * @property {?Thumb}            thumb
+ * @property {string}            [owner_name] - optional, only shown in authenticated mode
+ * @property {boolean}           is_nsfw
+ * @property {?AlbumAnonRights}  anonRights - `null` if not public, contains the "special" rights which only affect anonymous users; required to decorate album tiles with badges
+ * @property {AlbumRights}       effectiveRights - the effective rights the current user has for this album
+ * @property {boolean}           has_albums
+ * @property {?string}           min_taken_at
+ * @property {?string}           max_taken_at
  * @property {?SortingCriterion} sorting
  */
 
 /**
  * @typedef TagAlbum
  *
- * @property {string}   id
- * @property {string}   created_at
- * @property {string}   updated_at
- * @property {string}   title
- * @property {?string}  description
- * @property {string[]} show_tags
- * @property {Photo[]}  photos
- * @property {?Thumb}   thumb
- * @property {string}   [owner_name] optional, only shown in authenticated mode
- * @property {boolean}  is_public
- * @property {boolean}  is_downloadable
- * @property {boolean}  is_share_button_visible
- * @property {boolean}  is_nsfw
- * @property {boolean}  grants_full_photo
- * @property {boolean}  requires_link
- * @property {boolean}  has_password
- * @property {?string}  min_taken_at
- * @property {?string}  max_taken_at
- * @property {?SortingCriterion}  sorting
- * @property {boolean}  is_tag_album always true
+ * @property {string}            id
+ * @property {string}            created_at
+ * @property {string}            updated_at
+ * @property {string}            title
+ * @property {?string}           description
+ * @property {string[]}          show_tags
+ * @property {Photo[]}           photos
+ * @property {?Thumb}            thumb
+ * @property {string}            [owner_name] optional, only shown in authenticated mode
+ * @property {boolean}           is_nsfw
+ * @property {?AlbumAnonRights}  anonRights - `null` if not public, contains the "special" rights which only affect anonymous users; required to decorate album tiles with badges
+ * @property {AlbumRights}       effectiveRights - the effective rights the current user has for this album * @property {?string}  min_taken_at
+ * @property {?string}           min_taken_at
+ * @property {?string}           max_taken_at
+ * @property {?SortingCriterion} sorting
+ * @property {boolean}           is_tag_album always true
  */
 
 /**
@@ -138,7 +129,6 @@
  * @property {?Thumb}  thumb
  * @property {boolean} is_public
  * @property {boolean} is_downloadable
- * @property {boolean} is_share_button_visible
  */
 
 /**
@@ -151,14 +141,43 @@
  */
 
 /**
- * @typedef SharingInfo
+ * @typedef AlbumAnonRights
  *
- * DTO returned by `Sharing::list`
- *
- * @property {{id: number, album_id: string, user_id: number, username: string, title: string}[]} shared
- * @property {{id: string, title: string}[]}                                                      albums
- * @property {{id: number, username: string}[]}                                                   users
+ * @property {boolean} is_direct_link_required
+ * @property {boolean} has_password
  */
+
+/**
+ * @typedef AlbumRights
+ *
+ * @property {boolean} is_full_photo_granted
+ * @property {boolean} is_downloadable
+ */
+
+/**
+ * @typedef UserSharingInfoForAlbum
+ *
+ * Array of this DTO is returned by `Sharing::getUserSharingInfosForAlbum`
+ *
+ * @property {number}  id
+ * @property {number}  user_id
+ * @property {string}  username
+ * @property {boolean} is_full_photo_granted
+ * @property {boolean} is_downloadable
+ */
+
+/**
+ * @typedef AnonSharingInfoForAlbum
+ *
+ * DTO returned by `Sharing::getAnonSharingInfoForAlbum`
+ *
+ * @property {number}  id
+ * @property {boolean} is_direct_link_required
+ * @property {boolean} is_full_photo_granted
+ * @property {boolean} is_downloadable
+ * @property {?string} password
+ */
+
 
 /**
  * @typedef SearchResult

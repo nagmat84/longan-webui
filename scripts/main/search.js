@@ -26,7 +26,6 @@ const SearchAlbumIDPrefix = "search";
  * @property {?Thumb}  thumb                    - always `null`; just a dummy entry, because all other albums {@link Album}, {@link TagAlbum}, {@link SmartAlbum} have it
  * @property {boolean} is_public                - always `false`; just a dummy entry, because all other albums {@link Album}, {@link TagAlbum}, {@link SmartAlbum} have it
  * @property {boolean} is_downloadable          - always `false`; just a dummy entry, because all other albums {@link Album}, {@link TagAlbum}, {@link SmartAlbum} have it
- * @property {boolean} is_share_button_visible  - always `false`; just a dummy entry, because all other albums {@link Album}, {@link TagAlbum}, {@link SmartAlbum} have it
  */
 
 /**
@@ -65,7 +64,6 @@ search.find = function (term) {
 			thumb: null,
 			is_public: false,
 			is_downloadable: false,
-			is_share_button_visible: false,
 		};
 
 		let albumsData = "";

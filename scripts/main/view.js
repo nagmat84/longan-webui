@@ -606,8 +606,8 @@ view.album = {
 	public: function () {
 		$("#button_visibility_album, #button_sharing_album_users").removeClass("active--not-hidden active--hidden");
 
-		if (album.json.is_public) {
-			if (album.json.requires_link) {
+		if (album.json.anonRights) {
+			if (album.json.anonRights.is_direct_link_required) {
 				$("#button_visibility_album, #button_sharing_album_users").addClass("active--hidden");
 			} else {
 				$("#button_visibility_album, #button_sharing_album_users").addClass("active--not-hidden");
@@ -625,7 +625,7 @@ view.album = {
 	 * @returns {void}
 	 */
 	requiresLink: function () {
-		if (album.json.requires_link) sidebar.changeAttr("hidden", lychee.locale["ALBUM_SHR_YES"]);
+		if (album.json.anonRights && album.json.anonRights.is_direct_link_required) sidebar.changeAttr("hidden", lychee.locale["ALBUM_SHR_YES"]);
 		else sidebar.changeAttr("hidden", lychee.locale["ALBUM_SHR_NO"]);
 	},
 
@@ -645,24 +645,8 @@ view.album = {
 	/**
 	 * @returns {void}
 	 */
-	downloadable: function () {
-		if (album.json.is_downloadable) sidebar.changeAttr("downloadable", lychee.locale["ALBUM_SHR_YES"]);
-		else sidebar.changeAttr("downloadable", lychee.locale["ALBUM_SHR_NO"]);
-	},
-
-	/**
-	 * @returns {void}
-	 */
-	shareButtonVisible: () => {
-		if (album.json.is_share_button_visible) sidebar.changeAttr("share_button_visible", lychee.locale["ALBUM_SHR_YES"]);
-		else sidebar.changeAttr("share_button_visible", lychee.locale["ALBUM_SHR_NO"]);
-	},
-
-	/**
-	 * @returns {void}
-	 */
 	password: function () {
-		if (album.json.has_password) sidebar.changeAttr("password", lychee.locale["ALBUM_SHR_YES"]);
+		if (album.json.anonRights && albu.json.anonRights.has_password) sidebar.changeAttr("password", lychee.locale["ALBUM_SHR_YES"]);
 		else sidebar.changeAttr("password", lychee.locale["ALBUM_SHR_NO"]);
 	},
 

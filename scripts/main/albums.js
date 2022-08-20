@@ -83,7 +83,7 @@ albums.parse = function (album) {
 	if (!album.thumb) {
 		album.thumb = {
 			id: "",
-			thumb: album.has_password ? "img/password.svg" : "img/no_images.svg",
+			thumb: album.anonRights && album.anonRights.has_password ? "img/password.svg" : "img/no_images.svg",
 			type: "image/svg+xml",
 			thumb2x: null,
 		};
@@ -107,9 +107,6 @@ albums.localizeSmartAlbums = function (data) {
 
 	if (data.public) {
 		data.public.title = lychee.locale["PUBLIC"];
-		// TODO: Why do we need to set these two attributes? What component relies upon them, what happens if we don't set them? Is it legacy?
-		data.public.is_public = true;
-		data.public.requires_link = true;
 	}
 
 	if (data.recent) {

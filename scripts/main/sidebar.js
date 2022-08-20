@@ -422,13 +422,11 @@ sidebar.createStructure.photo = function (data) {
 sidebar.createStructure.album = function (data) {
 	if (!data) return [];
 
-	let editable = album.isUploadable();
-	let structure = {};
-	let isPublic = data.is_public ? lychee.locale["ALBUM_SHR_YES"] : lychee.locale["ALBUM_SHR_NO"];
-	let requiresLink = data.requires_link ? lychee.locale["ALBUM_SHR_YES"] : lychee.locale["ALBUM_SHR_NO"];
-	let isDownloadable = data.is_downloadable ? lychee.locale["ALBUM_SHR_YES"] : lychee.locale["ALBUM_SHR_NO"];
-	let isShareButtonVisible = data.is_share_button_visible ? lychee.locale["ALBUM_SHR_YES"] : lychee.locale["ALBUM_SHR_NO"];
-	let hasPassword = data.has_password ? lychee.locale["ALBUM_SHR_YES"] : lychee.locale["ALBUM_SHR_NO"];
+	const editable = album.isUploadable();
+	const structure = {};
+	const isPublic = data.anonRights ? lychee.locale["ALBUM_SHR_YES"] : lychee.locale["ALBUM_SHR_NO"];
+	const requiresLink = !data.anonRights ? '-' : data.anonRights.is_direct_link_required ? lychee.locale["ALBUM_SHR_YES"] : lychee.locale["ALBUM_SHR_NO"];
+	const hasPassword = !data.anonRights ? '-' : data.anonRights.has_password ? lychee.locale["ALBUM_SHR_YES"] : lychee.locale["ALBUM_SHR_NO"];
 	let license = "";
 	let sorting = "";
 
@@ -495,8 +493,6 @@ sidebar.createStructure.album = function (data) {
 		rows: [
 			{ title: lychee.locale["ALBUM_PUBLIC"], kind: "public", value: isPublic },
 			{ title: lychee.locale["ALBUM_HIDDEN"], kind: "hidden", value: requiresLink },
-			{ title: lychee.locale["ALBUM_DOWNLOADABLE"], kind: "downloadable", value: isDownloadable },
-			{ title: lychee.locale["ALBUM_SHARE_BUTTON_VISIBLE"], kind: "share_button_visible", value: isShareButtonVisible },
 			{ title: lychee.locale["ALBUM_PASSWORD"], kind: "password", value: hasPassword },
 		],
 	};

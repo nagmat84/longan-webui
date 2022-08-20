@@ -707,7 +707,7 @@ contextMenu.move = function (IDs, e, callback, kind = "UNSORTED", display_root =
  * @returns {void}
  */
 contextMenu.sharePhoto = function (photoID, e) {
-	if (!photo.json.is_share_button_visible) {
+	if (!lychee.share_button_visible) {
 		return;
 	}
 
@@ -732,7 +732,7 @@ contextMenu.sharePhoto = function (photoID, e) {
  * @returns {void}
  */
 contextMenu.shareAlbum = function (albumID, e) {
-	if (!album.json.is_share_button_visible) {
+	if (!lychee.share_button_visible) {
 		return;
 	}
 
@@ -746,10 +746,6 @@ contextMenu.shareAlbum = function (albumID, e) {
 			title: build.iconic("link-intact") + lychee.locale["DIRECT_LINK"],
 			fn: () => {
 				let url = lychee.getBaseUrl() + "r/" + albumID;
-				if (album.json.has_password) {
-					// Copy the url with prefilled password param
-					url += "?password=";
-				}
 				navigator.clipboard.writeText(url).then(() => loadingBar.show("success", lychee.locale["URL_COPIED_TO_CLIPBOARD"]));
 			},
 		},

@@ -13,7 +13,6 @@ const lychee = {
 
 	publicMode: false,
 	viewMode: false,
-	full_photo: true,
 	downloadable: false,
 	public_photos_hidden: true,
 	share_button_visible: false,

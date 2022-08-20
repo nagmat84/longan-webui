@@ -640,16 +640,16 @@ photo.setProtectionPolicy = function (photoID) {
 
 		$('.basicModal .switch input[name="is_public"]').prop("checked", true);
 		if (album.json) {
-			if (album.json.grants_full_photo) {
+			if (album.json.effectiveRights.is_full_photo_granted) {
 				$('.basicModal .choice input[name="grants_full_photo"]').prop("checked", true);
 			}
 			// Photos in public albums are never hidden as such.  It's the
 			// album that's hidden.  Or is that distinction irrelevant to end
 			// users?
-			if (album.json.is_downloadable) {
+			if (album.json.effectiveRights.is_downloadable) {
 				$('.basicModal .choice input[name="is_downloadable"]').prop("checked", true);
 			}
-			if (album.json.has_password) {
+			if (album.json.anonRights.has_password) {
 				$('.basicModal .choice input[name="has_password"]').prop("checked", true);
 			}
 		}
@@ -886,7 +886,7 @@ photo.deleteTag = function (photoID, index) {
  * @returns {void}
  */
 photo.share = function (photoID, service) {
-	if (!photo.json.is_share_button_visible) {
+	if (!lychee.share_button_visible) {
 		return;
 	}
 
