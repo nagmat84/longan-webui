@@ -43,11 +43,11 @@ header.bind = function () {
 	});
 
 	header.dom("#button_visibility_album").on(eventName, function () {
-		album.setProtectionPolicy(album.getID());
+		album.showAnonShareDialog(album.getID());
 	});
 
 	header.dom("#button_sharing_album_users").on(eventName, function () {
-		album.showShareDialog(album.getID());
+		album.showUserShareDialog(album.getID());
 	});
 
 	header.dom("#button_share_album").on(eventName, function (e) {

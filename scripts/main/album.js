@@ -805,15 +805,41 @@ album.setSorting = function (albumID) {
 };
 
 /**
+ * @param {?AnonSharingInfoForAlbum} anonSharingInfo
+ * @returns {void}
+ */
+album.setAnonSharingInfo = function(anonSharingInfo) {
+	// Update data of cached album model and refresh view
+	album.json.anonRights = anonSharingInfo ?
+		{
+			is_direct_link_required: anonSharingInfo.is_direct_link_required,
+			has_password: hasPassword
+		} : null;
+	albums.refresh();
+	if (visible.album()) {
+		view.album.nsfw();
+		view.album.public();
+		view.album.requiresLink();
+		view.album.downloadable();
+		view.album.password();
+	}
+
+	// Update backend
+	if (anonSharingInfo) {
+		api.post("Sharing::setAnonSharingInfo", anonSharingInfo);
+	} else {
+		api.post("Sharing::deleteAnonSharingInfo", {id: albumID});
+	}
+}
+
+/**
  * Sets the accessibility attributes of an album.
  *
  * @param {string} albumID
  * @returns {void}
  */
-album.setProtectionPolicy = function (albumID) {
-	const action = function (data) {
-		albums.refresh();
-
+album.showAnonShareDialog = function (albumID) {
+	const handleShareDialogAction = function (data) {
 		// TODO: If the modal dialog would provide us with proper boolean values for the checkboxes as part of `data` the same way as it does for text inputs, then we would not need these slow and awkward jQeury selectors
 		/** @type {?AnonSharingInfoForAlbum} */
 		const anonSharingInfo = $('.basicModal .switch input[name="is_public"]:checked').length === 1 ? {
@@ -837,30 +863,10 @@ album.setProtectionPolicy = function (albumID) {
 		// Modal input has been processed, now it can be closed
 		basicModal.close();
 
-		// Update data of cached album model and refresh view
-		album.json.anonRights = anonSharingInfo ?
-			{
-				is_direct_link_required: anonSharingInfo.is_direct_link_required,
-				has_password: hasPassword
-			} : null;
-		if (visible.album()) {
-			view.album.nsfw();
-			view.album.public();
-			view.album.requiresLink();
-			view.album.downloadable();
-			view.album.shareButtonVisible();
-			view.album.password();
-		}
-
-		// Update backend
-		if (anonSharingInfo) {
-			api.post("Sharing::setAnonSharingInfo", anonSharingInfo);
-		} else {
-			api.post("Sharing::deleteAnonSharingInfo", {id: albumID});
-		}
+		album.setAnonSharingInfo(anonSharingInfo);
 	};
 
-	const msg = lychee.html`
+	const anonShareDialogHtml = lychee.html`
 		<form>
 			<div class='switch'>
 				<label>
@@ -896,29 +902,12 @@ album.setProtectionPolicy = function (albumID) {
 			</div>
 			<div class='choice'>
 				<label>
-					<input type='checkbox' name='is_share_button_visible'>
-					<span class='checkbox'>${build.iconic("check")}</span>
-					<span class='label'>${lychee.locale["ALBUM_SHARE_BUTTON_VISIBLE"]}</span>
-				</label>
-				<p>${lychee.locale["ALBUM_SHARE_BUTTON_VISIBLE_EXPL"]}</p>
-			</div>
-			<div class='choice'>
-				<label>
 					<input type='checkbox' name='has_password'>
 					<span class='checkbox'>${build.iconic("check")}</span>
 					<span class='label'>${lychee.locale["ALBUM_PASSWORD_PROT"]}</span>
 				</label>
 				<p>${lychee.locale["ALBUM_PASSWORD_PROT_EXPL"]}</p>
 				<input class='text' name='passwordtext' type='text' placeholder='${lychee.locale["PASSWORD"]}' value=''>
-			</div>
-			<div class='hr'><hr></div>
-			<div class='switch'>
-				<label>
-					${lychee.locale["ALBUM_NSFW"]}:&nbsp;
-					<input type='checkbox' name='is_nsfw'>
-					<span class='slider round'></span>
-				</label>
-				<p>${lychee.locale["ALBUM_NSFW_EXPL"]}</p>
 			</div>
 		</form>
 	`;
@@ -964,12 +953,12 @@ album.setProtectionPolicy = function (albumID) {
 	};
 
 	basicModal.show({
-		body: msg,
+		body: anonShareDialogHtml,
 		callback: () => api.post("Sharing::getAnonSharingInfoByAlbum", {id: albumID}, initShareDialog),
 		buttons: {
 			action: {
 				title: lychee.locale["SAVE"],
-				fn: action,
+				fn: handleShareDialogAction,
 			},
 			cancel: {
 				title: lychee.locale["CANCEL"],
@@ -980,118 +969,137 @@ album.setProtectionPolicy = function (albumID) {
 };
 
 /**
+ * @param {UserSharingInfoForAlbum[]} userSharingInfos
+ * @returns {void}
+ */
+album.setUserSharingInfo = function (userSharingInfos) {
+	if (sharingToDelete.length > 0) {
+		api.post("Sharing::delete", {
+			shareIDs: sharingToDelete,
+		});
+	}
+	if (sharingToAdd.length > 0) {
+		api.post("Sharing::add", {
+			albumIDs: [albumID],
+			userIDs: sharingToAdd,
+		});
+	}
+}
+
+/**
  * Lets a user update the sharing settings of an album.
  *
  * @param {string} albumID
  * @returns {void}
  */
-album.showShareDialog = function (albumID) {
-	const setSharingInfo = function (data) {
+album.showUserShareDialog = function (albumID) {
+	/** @type {HTMLTableElement} */
+	let userSharingTable = null;
+
+	const handleShareDialogAction = function (data) {
+		if (userSharingTable === null) {
+			basicModal.close();
+			return;
+		}
+
+		for (let row of userSharingTable.rows) {
+			// TODO:
+		}
+
+		// Modal input has been processed, now it can be closed
 		basicModal.close();
 
-		/** @type {number[]} */
-		const sharingToAdd = [];
-		/** @type {number[]} */
-		const sharingToDelete = [];
-		$(".basicModal .choice input").each((_, input) => {
-			const $input = $(input);
-			if ($input.is(":checked")) {
-				if ($input.data("sharingId") === undefined) {
-					// Input is checked but has no sharing id => new share to create
-					sharingToAdd.push(Number.parseInt(input.name));
-				}
-			} else {
-				const sharingId = $input.data("sharingId");
-				if (sharingId !== undefined) {
-					// Input is not checked but has a sharing id => existing share to remove
-					sharingToDelete.push(Number.parseInt(sharingId));
-				}
-			}
-		});
-
-		if (sharingToDelete.length > 0) {
-			api.post("Sharing::delete", {
-				shareIDs: sharingToDelete,
-			});
-		}
-		if (sharingToAdd.length > 0) {
-			api.post("Sharing::add", {
-				albumIDs: [albumID],
-				userIDs: sharingToAdd,
-			});
-		}
+		album.setUserSharingInfo(sharingToAdd, sharingToDelete);
 	};
 
-	const shareDialogHtml = lychee.html`
-		<form id="user_share_info_form"><p>${lychee.locale["WAIT_FETCH_DATA"]}</p></form>
-		<form id="anon_share_info_form">
-			<div class='choice'>
-				<label>
-					<input type='checkbox' name='requires_link'>
-					<span class='checkbox'>${build.iconic("check")}</span>
-					<span class='label'>${lychee.locale["ALBUM_HIDDEN"]}</span>
-				</label>
-				<p>${lychee.locale["ALBUM_HIDDEN_EXPL"]}</p>
-			</div>
-			<div class='choice'>
-				<label>
-					<input type='checkbox' name='has_password'>
-					<span class='checkbox'>${build.iconic("check")}</span>
-					<span class='label'>${lychee.locale["ALBUM_PASSWORD_PROT"]}</span>
-				</label>
-				<p>${lychee.locale["ALBUM_PASSWORD_PROT_EXPL"]}</p>
-				<input class='text' name='passwordtext' type='text' placeholder='${lychee.locale["PASSWORD"]}' value=''>
-			</div>
-			<div class='hr'><hr></div>
-			<div class='switch'>
-				<label>
-					${lychee.locale["ALBUM_NSFW"]}:&nbsp;
-					<input type='checkbox' name='is_nsfw'>
-					<span class='slider round'></span>
-				</label>
-				<p>${lychee.locale["ALBUM_NSFW_EXPL"]}</p>
-			</div>
-		</form>
-	`;
+	const userShareDialogHtml = `<form id="user_share_info_form"><p>${lychee.locale["WAIT_FETCH_DATA"]}</p></form>`;
 
-	/** @param {SharingInfoForAlbum} data */
+	/** @param {UserSharingInfoForAlbum[]} data */
 	const initShareDialog = function (data) {
-		const sharingForm = $("#user_share_info_form");
-
-		sharingForm.empty();
-		if (data.users.length !== 0) {
-			sharingForm.append(`<p>${lychee.locale["SHARING_ALBUM_USERS_LONG_MESSAGE"]}</p>`);
-			// Fill with the list of users
-			data.users.forEach((user) => {
-				sharingForm.append(lychee.html`<div class='choice'>
-						<label>
-							<input type='checkbox' name='${user.id}'>
-							<span class='checkbox'>${build.iconic("check")}</span>
-							<span class='label'>${user.username}</span>
-						</label>
-						<p></p>
-					</div>`);
-			});
-			data.shared
-				.filter((val) => val.album_id === albumID)
-				.forEach((sharing) => {
-					// Check all the shares that already exist, and store their sharing id on the element
-					const elem = $(`.basicModal .choice input[name="${sharing.user_id}"]`);
-					elem.prop("checked", true);
-					elem.data("sharingId", sharing.id);
-				});
-		} else {
-			sharingForm.append(`<p>${lychee.locale["SHARING_ALBUM_USERS_NO_USERS"]}</p>`);
+		/**
+		 * @param {HTMLTableCellElement} tableCell - the containing table cell
+		 * @param {string} name - name of the HTML `input` element
+		 * @param {boolean} isChecked - check state of the HTML `input` element
+		 * @returns {void}
+		 */
+		const insertCheckbox = function(tableCell, name, isChecked) {
+			/** @type {HTMLInputElement} */
+			const input = tableCell.appendChild(document.createElement('input'));
+			input.type = 'checkbox';
+			input.name = name;
+			input.checked = isChecked;
+			/** @type {HTMLSpanElement} */
+			const span = tableCell.appendChild(document.createElement('span'));
+			span.classList.add('checkbox');
+			span.innerHTML = build.iconic("check");
 		}
+
+		/**
+		 * @param {HTMLTableCellElement} tableCell - the containing table cell
+		 * @param {string} userId - the user id to be added as `data-user-id` to the button
+		 * @returns {void}
+		 */
+		const insertDeleteButton = function(tableCell, userId) {
+			/** @type {HTMLAnchorElement} */
+			const button = tableCell.appendChild(document.createElement('a'));
+			button.classList.add('basicModal__button', 'basicModal__button_DEL');
+			button.textContent = 'Delete';
+			button.dataset.userId = userId;
+		}
+
+		/**
+		 * @param {HTMLTableCellElement} tableCell - the containing table cell
+		 * @param {string} userId - the user id to be added as `data-user-id` to the button
+		 * @returns {void}
+		 */
+		const insertCreateButton = function(tableCell, userId) {
+			/** @type {HTMLAnchorElement} */
+			const button = tableCell.appendChild(document.createElement('a'));
+			button.classList.add('basicModal__button', 'basicModal__button_CREATE');
+			button.textContent = lychee.locale["CREATE"];
+			button.dataset.userId = userId;
+		}
+
+		const sharingForm = document.getElementById('user_share_info_form');
+
+		/** @type {HTMLTableElement} */
+		userSharingTable = document.createElement('table');
+
+		const headRow = userSharingTable.createTHead().insertRow();
+		headRow.insertCell().textContent = 'User name';
+		headRow.insertCell().textContent = 'do'
+		headRow.insertCell().textContent = 'fp'
+		headRow.insertCell(); // for add/remove button
+
+		const tableBody = userSharingTable.createTBody();
+		data.forEach(function(userSharingInfo) {
+			const userId = userSharingInfo.user_id.toString();
+			const tableRow = tableBody.insertRow();
+			tableRow.dataset.userId = userId;
+			tableRow.insertCell().textContent = userSharingInfo.username;
+			insertCheckbox(tableRow.insertCell(), 'is-downloadable-' + userId, userSharingInfo.is_downloadable);
+			insertCheckbox(tableRow.insertCell(), 'is-full-photo-granted-' + userId, userSharingInfo.is_full_photo_granted);
+			insertDeleteButton(tableRow.insertCell(), userId);
+		});
+
+		const footRow = userSharingTable.createTFoot().insertRow();
+		/** @type {HTMLSelectElement} */
+		const newUserSelect = footRow.insertCell().appendChild(document.createElement('select'));
+		newUserSelect.name = 'new-user-select';
+		insertCheckbox(footRow.insertCell(), 'is-downloadable-new', false);
+		insertCheckbox(footRow.insertCell(), 'is-full-photo-granted-new', false);
+		insertCreateButton(footRow.insertCell(), 'new');
+
+		sharingForm.replaceChildren(userSharingTable);
 	};
 
 	basicModal.show({
-		body: shareDialogHtml,
+		body: userShareDialogHtml,
 		callback: () => api.post("Sharing::listByAlbum", {}, initShareDialog),
 		buttons: {
 			action: {
 				title: lychee.locale["SAVE"],
-				fn: setSharingInfo,
+				fn: handleShareDialogAction,
 			},
 			cancel: {
 				title: lychee.locale["CANCEL"],

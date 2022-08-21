@@ -47,7 +47,7 @@ contextMenu.add = function (e) {
 					items.unshift({
 						title: build.iconic("eye") + lychee.locale["VISIBILITY_ALBUM"],
 						visible: lychee.enable_button_visibility,
-						fn: () => album.setProtectionPolicy(albumID),
+						fn: () => album.showAnonShareDialog(albumID),
 					});
 				}
 			}
