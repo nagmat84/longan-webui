@@ -1,0 +1,218 @@
+.basicModal.share_info_dialog .basicModal__content {
+	padding: 32px;
+	color: #ccc;
+}
+
+.basicModal.share_info_dialog .basicModal__content form.user_share {
+	margin: 0;
+	padding: 0;
+
+	.basicModal__button {
+		border-radius: 5px;
+		padding: 7px;
+		&_DEL {
+			color: #b22027;
+			.iconic {
+				width: 16px;
+				height: 16px;
+				fill: #b22027;
+			}
+		}
+		&_CREATE {
+			color: #009900;
+			.iconic {
+				width: 16px;
+				height: 16px;
+				fill: #009900;
+			}
+		}
+	}
+
+	input[type="checkbox"] {
+		display: none;
+	}
+
+	table {
+		table-layout: fixed; // the layout is determined by the explicit width of the cells in the first row
+		border-collapse: collapse;
+
+		td {
+			overflow: clip;
+			text-overflow: ellipsis;
+			padding: 2px 0;
+
+			&:nth-child(1), &:nth-child(4) {
+				text-align: left;
+			}
+
+			&:nth-child(2), &:nth-child(3) {
+				text-align: center;
+			}
+		}
+
+		thead td{
+			vertical-align: bottom;
+			padding-bottom: 5px;
+			color: #fff;
+			font-weight: bold;
+
+			.iconic {
+				width: 16px;
+				height: 16px;
+				fill: #fff;
+			}
+
+			&:nth-child(1) {
+				width: 15em;
+			}
+			&:nth-child(2), &:nth-child(3) {
+				width: 3em;
+			}
+			&:nth-child(4) {
+				width: 34px; // the icon of the button icon is 16px wide, button padding is 7px to each side, border is 2px
+			}
+		}
+
+		tbody td {
+			vertical-align: middle;
+		}
+
+		tfoot td {
+			vertical-align: middle;
+			padding-top: 5px;
+		}
+
+		td {
+			span, label {
+				float: none;
+				display: block;
+				width: 16px;
+				height: 16px;
+				margin: auto; // necessary to center the block horizontally within the table cell
+				padding: 0;
+			}
+
+			.select {
+				position: relative;
+				margin: 0;
+				padding: 0;
+				height: auto;
+				width: 100%;
+				color: #fff;
+				border-radius: 3px;
+				border: 1px solid rgba(0, 0, 0, 0.2);
+				box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02);
+				font-size: 11px;
+				line-height: 16px;
+				overflow: hidden;
+				outline: 0;
+				vertical-align: middle;
+				background: rgba(0, 0, 0, 0.3);
+				display: inline-block;
+
+				select {
+					margin: 0;
+					padding: 4px 8px;
+					width: 100%;
+					color: #fff;
+					font-size: 11px;
+					line-height: 16px;
+					border: 0;
+					outline: 0;
+					box-shadow: none;
+					border-radius: 0;
+					background: transparent none;
+					-moz-appearance: none;
+					-webkit-appearance: none;
+					appearance: none;
+
+					option {
+						margin: 0;
+						padding: 0;
+						background: #fff;
+						color: #333;
+						transition: none;
+					}
+				}
+
+				&::after {
+					position: absolute;
+					content: "≡";
+					right: 8px;
+					top: 4px;
+					color: #2293ec;
+					font-size: 16px;
+					line-height: 16px;
+					font-weight: 700;
+					pointer-events: none;
+				}
+			}
+		}
+	}
+}
+
+.basicModal.share_info_dialog .basicModal__content div.hr {
+	padding: 0;
+	margin:  16px 0;
+}
+
+.basicModal.share_info_dialog .basicModal__content form.anon_share {
+	margin: 0;
+	padding: 0;
+
+	> div, > p {
+		padding: 0;
+		margin: 15px 0;
+	}
+}
+
+// restrict hover features to devices that support it
+@media (hover: hover) {
+	#user_share_info_form {
+		.basicModal__button {
+			&:hover {
+				cursor: pointer;
+				color: #fff;
+				.iconic {
+					fill: #fff;;
+				}
+			}
+
+			&_DEL:hover {
+				background: #b22027;
+			}
+
+			&_CREATE:hover {
+				background: #009900;
+			}
+		}
+
+		input:hover {
+			border-bottom: #2293ec solid 1px;
+		}
+	}
+}
+
+// on touch devices draw buttons in color
+@media (hover: none) {
+	.basicModal.share_info_dialog .basicModal__content form.user_share {
+		.basicModal__button {
+			color: #fff;
+			.iconic {
+				fill: #fff;;
+			}
+
+			&_DEL {
+				background: #b22027;
+			}
+
+			&_CREATE {
+				background: #009900;
+			}
+		}
+
+		input {
+			border-bottom: #2293ec solid 1px;
+		}
+	}
+}

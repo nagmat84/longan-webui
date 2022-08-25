@@ -805,7 +805,7 @@ album.setSorting = function (albumID) {
 };
 
 /**
- * @param {?AnonSharingInfoForAlbum} anonSharingInfo
+ * @param {?AnonSharingInfo} anonSharingInfo
  * @returns {void}
  */
 album.setAnonSharingInfo = function(anonSharingInfo) {
@@ -841,7 +841,7 @@ album.setAnonSharingInfo = function(anonSharingInfo) {
 album.showAnonShareDialog = function (albumID) {
 	const handleShareDialogAction = function (data) {
 		// TODO: If the modal dialog would provide us with proper boolean values for the checkboxes as part of `data` the same way as it does for text inputs, then we would not need these slow and awkward jQeury selectors
-		/** @type {?AnonSharingInfoForAlbum} */
+		/** @type {?AnonSharingInfo} */
 		const anonSharingInfo = $('.basicModal .switch input[name="is_public"]:checked').length === 1 ? {
 			id: albumID,
 			is_direct_link_required: $('.basicModal .choice input[name="requires_link"]:checked').length === 1,
@@ -913,7 +913,7 @@ album.showAnonShareDialog = function (albumID) {
 	`;
 
 	/**
-	 * @param {?AnonSharingInfoForAlbum} anonSharingInfo
+	 * @param {?AnonSharingInfo} anonSharingInfo
 	 * @returns {void}
 	 */
 	const initShareDialog = function (anonSharingInfo) {
@@ -954,7 +954,7 @@ album.showAnonShareDialog = function (albumID) {
 
 	basicModal.show({
 		body: anonShareDialogHtml,
-		callback: () => api.post("Sharing::getAnonSharingInfoByAlbum", {id: albumID}, initShareDialog),
+		callback: () => api.post("Sharing::getAnonSharingInfo", {albumID: albumID}, initShareDialog),
 		buttons: {
 			action: {
 				title: lychee.locale["SAVE"],
@@ -969,7 +969,7 @@ album.showAnonShareDialog = function (albumID) {
 };
 
 /**
- * @param {UserSharingInfoForAlbum[]} userSharingInfos
+ * @param {UserSharingInfo[]} userSharingInfos
  * @returns {void}
  */
 album.setUserSharingInfo = function (userSharingInfos) {
@@ -1012,26 +1012,58 @@ album.showUserShareDialog = function (albumID) {
 		album.setUserSharingInfo(sharingToAdd, sharingToDelete);
 	};
 
-	const userShareDialogHtml = `<form id="user_share_info_form"><p>${lychee.locale["WAIT_FETCH_DATA"]}</p></form>`;
+	const userShareDialogHtml = `
+		<form id='user_share_info_form' class="user_share"><p>${lychee.locale["WAIT_FETCH_DATA"]}</p></form>
+		<div class='hr'><hr /></div>
+		<form class="anon_share">
+			<p>${lychee.locale["ALBUM_PUBLIC_EXPL"]}</p>
+			<div class='choice'>
+				<label>
+					<input type='checkbox' name='requires_link'>
+					<span class='checkbox'>${build.iconic("check")}</span>
+					<span class='label'>${lychee.locale["ALBUM_HIDDEN"]}</span>
+				</label>
+				<p>${lychee.locale["ALBUM_HIDDEN_EXPL"]}</p>
+			</div>
+			<div class='choice'>
+				<label>
+					<input type='checkbox' name='has_password'>
+					<span class='checkbox'>${build.iconic("check")}</span>
+					<span class='label'>${lychee.locale["ALBUM_PASSWORD_PROT"]}</span>
+				</label>
+				<p>${lychee.locale["ALBUM_PASSWORD_PROT_EXPL"]}</p>
+				<input class='text' name='passwordtext' type='text' placeholder='${lychee.locale["PASSWORD"]}' value=''>
+			</div>
+		</form>`;
 
-	/** @param {UserSharingInfoForAlbum[]} data */
+	/** @param {UserSharingInfo[]} data */
 	const initShareDialog = function (data) {
 		/**
 		 * @param {HTMLTableCellElement} tableCell - the containing table cell
 		 * @param {string} name - name of the HTML `input` element
+		 * @param {string} tooltip - tool tip to show when hovered over the checkbox
 		 * @param {boolean} isChecked - check state of the HTML `input` element
 		 * @returns {void}
 		 */
-		const insertCheckbox = function(tableCell, name, isChecked) {
+		const insertCheckbox = function(tableCell, name, tooltip, isChecked) {
+			/** @type {HTMLSpanElement} */
+			const oSpan = tableCell.appendChild(document.createElement('span'));
+			oSpan.classList.add('choice');
+			oSpan.title = tooltip;
+			/** @type {HTMLLabelElement} */
+			const label = oSpan.appendChild(document.createElement('label'));
+			label.title = tooltip;
 			/** @type {HTMLInputElement} */
-			const input = tableCell.appendChild(document.createElement('input'));
+			const input = label.appendChild(document.createElement('input'));
 			input.type = 'checkbox';
 			input.name = name;
 			input.checked = isChecked;
+			input.title = tooltip;
 			/** @type {HTMLSpanElement} */
-			const span = tableCell.appendChild(document.createElement('span'));
-			span.classList.add('checkbox');
-			span.innerHTML = build.iconic("check");
+			const iSpan = label.appendChild(document.createElement('span'));
+			iSpan.classList.add('checkbox');
+			iSpan.innerHTML = build.iconic('check');
+			iSpan.title = tooltip;
 		}
 
 		/**
@@ -1043,7 +1075,8 @@ album.showUserShareDialog = function (albumID) {
 			/** @type {HTMLAnchorElement} */
 			const button = tableCell.appendChild(document.createElement('a'));
 			button.classList.add('basicModal__button', 'basicModal__button_DEL');
-			button.textContent = 'Delete';
+			button.innerHTML = build.iconic('trash');
+			button.title = lychee.locale["ALBUM_DOWNLOADABLE_EXPL"];
 			button.dataset.userId = userId;
 		}
 
@@ -1056,7 +1089,8 @@ album.showUserShareDialog = function (albumID) {
 			/** @type {HTMLAnchorElement} */
 			const button = tableCell.appendChild(document.createElement('a'));
 			button.classList.add('basicModal__button', 'basicModal__button_CREATE');
-			button.textContent = lychee.locale["CREATE"];
+			button.innerHTML = build.iconic('plus');
+			button.title = lychee.locale["ALBUM_FULL_EXPL"];
 			button.dataset.userId = userId;
 		}
 
@@ -1067,8 +1101,8 @@ album.showUserShareDialog = function (albumID) {
 
 		const headRow = userSharingTable.createTHead().insertRow();
 		headRow.insertCell().textContent = 'User name';
-		headRow.insertCell().textContent = 'do'
-		headRow.insertCell().textContent = 'fp'
+		headRow.insertCell().innerHTML = build.iconic('cloud-download');
+		headRow.insertCell().innerHTML = build.iconic('zoom-in');
 		headRow.insertCell(); // for add/remove button
 
 		const tableBody = userSharingTable.createTBody();
@@ -1077,17 +1111,27 @@ album.showUserShareDialog = function (albumID) {
 			const tableRow = tableBody.insertRow();
 			tableRow.dataset.userId = userId;
 			tableRow.insertCell().textContent = userSharingInfo.username;
-			insertCheckbox(tableRow.insertCell(), 'is-downloadable-' + userId, userSharingInfo.is_downloadable);
-			insertCheckbox(tableRow.insertCell(), 'is-full-photo-granted-' + userId, userSharingInfo.is_full_photo_granted);
+			insertCheckbox(tableRow.insertCell(), 'is-downloadable-' + userId, lychee.locale["ALBUM_DOWNLOADABLE_EXPL"], userSharingInfo.is_downloadable);
+			insertCheckbox(tableRow.insertCell(), 'is-full-photo-granted-' + userId, lychee.locale["ALBUM_FULL_EXPL"], userSharingInfo.is_full_photo_granted);
 			insertDeleteButton(tableRow.insertCell(), userId);
 		});
 
 		const footRow = userSharingTable.createTFoot().insertRow();
+		footRow.dataset.userId = 'new';
+		/** @type {HTMLSpanElement} */
+		const newUserSpan = footRow.insertCell().appendChild(document.createElement("span"));
+		newUserSpan.classList.add('select');
 		/** @type {HTMLSelectElement} */
-		const newUserSelect = footRow.insertCell().appendChild(document.createElement('select'));
+		const newUserSelect = newUserSpan.appendChild(document.createElement('select'));
 		newUserSelect.name = 'new-user-select';
-		insertCheckbox(footRow.insertCell(), 'is-downloadable-new', false);
-		insertCheckbox(footRow.insertCell(), 'is-full-photo-granted-new', false);
+		for (let userName of ['Foo', 'Bar']) {
+			/** @type {HTMLOptionElement} */
+			const newUserOption = newUserSelect.appendChild(document.createElement('option'))
+			newUserOption.value = '15';
+			newUserOption.textContent = userName;
+		}
+		insertCheckbox(footRow.insertCell(), 'is-downloadable-new', lychee.locale["ALBUM_DOWNLOADABLE_EXPL"], false);
+		insertCheckbox(footRow.insertCell(), 'is-full-photo-granted-new', lychee.locale["ALBUM_FULL_EXPL"], false);
 		insertCreateButton(footRow.insertCell(), 'new');
 
 		sharingForm.replaceChildren(userSharingTable);
@@ -1095,7 +1139,8 @@ album.showUserShareDialog = function (albumID) {
 
 	basicModal.show({
 		body: userShareDialogHtml,
-		callback: () => api.post("Sharing::listByAlbum", {}, initShareDialog),
+		callback: () => api.post("Sharing::listUserSharingInfo", {albumID: albumID}, initShareDialog),
+		class: 'share_info_dialog',
 		buttons: {
 			action: {
 				title: lychee.locale["SAVE"],

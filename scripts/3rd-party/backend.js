@@ -155,21 +155,23 @@
  */
 
 /**
- * @typedef UserSharingInfoForAlbum
+ * @typedef UserSharingInfo
  *
- * Array of this DTO is returned by `Sharing::getUserSharingInfosForAlbum`
+ * Array of this DTO is returned by `Sharing::listUserSharingInfo`
  *
  * @property {number}  id
  * @property {number}  user_id
  * @property {string}  username
+ * @property {number}  album_id
+ * @property {string}  album_title
  * @property {boolean} is_full_photo_granted
  * @property {boolean} is_downloadable
  */
 
 /**
- * @typedef AnonSharingInfoForAlbum
+ * @typedef AnonSharingInfo
  *
- * DTO returned by `Sharing::getAnonSharingInfoForAlbum`
+ * DTO returned by `Sharing::getAnonSharingInfo`
  *
  * @property {number}  id
  * @property {boolean} is_direct_link_required
