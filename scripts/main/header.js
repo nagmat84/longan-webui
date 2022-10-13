@@ -7,7 +7,7 @@
  * @property {jQuery} _dom
  */
 const header = {
-	_dom: $(".header"),
+	_dom: $("#lychee_toolbar_container"),
 };
 
 /**
@@ -168,7 +168,7 @@ header.bind_back = function () {
  */
 header.show = function () {
 	lychee.imageview.removeClass("full");
-	header.dom().removeClass("header--hidden");
+	header.dom().removeClass("hidden");
 
 	tabindex.restoreSettings(header.dom());
 
@@ -192,7 +192,7 @@ header.hide = function () {
 		tabindex.makeUnfocusable(header.dom());
 
 		lychee.imageview.addClass("full");
-		header.dom().addClass("header--hidden");
+		header.dom().addClass("hidden");
 
 		photo.updateSizeLivePhotoDuringAnimation();
 	}
@@ -232,35 +232,28 @@ header.setMode = function (mode) {
 
 	switch (mode) {
 		case "public":
-			header.dom().removeClass("header--view");
-			header
-				.dom(".header__toolbar--albums, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map, .header__toolbar--config")
-				.removeClass("header__toolbar--visible");
-			header.dom(".header__toolbar--public").addClass("header__toolbar--visible");
-			tabindex.makeFocusable(header.dom(".header__toolbar--public"));
-			tabindex.makeUnfocusable(
-				header.dom(
-					".header__toolbar--albums, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map, .header__toolbar--config"
-				)
-			);
+			header.dom(".toolbar").removeClass("visible");
+			header.dom("#lychee_toolbar_public").addClass("visible");
+			tabindex.makeUnfocusable(header.dom(".toolbar"));
+			tabindex.makeFocusable(header.dom("#lychee_toolbar_public"));
 
 			if (lychee.public_search) {
-				const e = $(".header__search, .header__clear", ".header__toolbar--public");
+				const e = $(".header__search, .header__clear", "#lychee_toolbar_public");
 				e.show();
 				tabindex.makeFocusable(e);
 			} else {
-				const e = $(".header__search, .header__clear", ".header__toolbar--public");
+				const e = $(".header__search, .header__clear", "#lychee_toolbar_public");
 				e.hide();
 				tabindex.makeUnfocusable(e);
 			}
 
 			// Set icon in Public mode
 			if (lychee.map_display_public) {
-				const e = $(".button--map-albums", ".header__toolbar--public");
+				const e = $(".button--map-albums", "#lychee_toolbar_public");
 				e.show();
 				tabindex.makeFocusable(e);
 			} else {
-				const e = $(".button--map-albums", ".header__toolbar--public");
+				const e = $(".button--map-albums", "#lychee_toolbar_public");
 				e.hide();
 				tabindex.makeUnfocusable(e);
 			}
@@ -272,36 +265,28 @@ header.setMode = function (mode) {
 			return;
 
 		case "albums":
-			header.dom().removeClass("header--view");
-			header
-				.dom(".header__toolbar--public, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map, .header__toolbar--config")
-				.removeClass("header__toolbar--visible");
-			header.dom(".header__toolbar--albums").addClass("header__toolbar--visible");
-
-			tabindex.makeFocusable(header.dom(".header__toolbar--albums"));
-			tabindex.makeUnfocusable(
-				header.dom(
-					".header__toolbar--public, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map, .header__toolbar--config"
-				)
-			);
+			header.dom(".toolbar").removeClass("visible");
+			header.dom("#lychee_toolbar_albums").addClass("visible");
+			tabindex.makeUnfocusable(header.dom(".toolbar"));
+			tabindex.makeFocusable(header.dom("#lychee_toolbar_albums"));
 
 			// If map is disabled, we should hide the icon
 			if (lychee.map_display) {
-				const e = $(".button--map-albums", ".header__toolbar--albums");
+				const e = $(".button--map-albums", "#lychee_toolbar_albums");
 				e.show();
 				tabindex.makeFocusable(e);
 			} else {
-				const e = $(".button--map-albums", ".header__toolbar--albums");
+				const e = $(".button--map-albums", "#lychee_toolbar_albums");
 				e.hide();
 				tabindex.makeUnfocusable(e);
 			}
 
 			if (lychee.enable_button_add && lychee.rights.may_upload) {
-				const e = $(".button_add", ".header__toolbar--albums");
+				const e = $(".button_add", "#lychee_toolbar_albums");
 				e.show();
 				tabindex.makeFocusable(e);
 			} else {
-				const e = $(".button_add", ".header__toolbar--albums");
+				const e = $(".button_add", "#lychee_toolbar_albums");
 				e.remove();
 			}
 
@@ -310,18 +295,10 @@ header.setMode = function (mode) {
 		case "album":
 			const albumID = album.getID();
 
-			header.dom().removeClass("header--view");
-			header
-				.dom(".header__toolbar--public, .header__toolbar--albums, .header__toolbar--photo, .header__toolbar--map, .header__toolbar--config")
-				.removeClass("header__toolbar--visible");
-			header.dom(".header__toolbar--album").addClass("header__toolbar--visible");
-
-			tabindex.makeFocusable(header.dom(".header__toolbar--album"));
-			tabindex.makeUnfocusable(
-				header.dom(
-					".header__toolbar--public, .header__toolbar--albums, .header__toolbar--photo, .header__toolbar--map, .header__toolbar--config"
-				)
-			);
+			header.dom(".toolbar").removeClass("visible");
+			header.dom("#lychee_toolbar_album").addClass("visible");
+			tabindex.makeUnfocusable(header.dom(".toolbar"));
+			tabindex.makeFocusable(header.dom("#lychee_toolbar_album"));
 
 			// Hide download button when album empty or we are not allowed to
 			// upload to it and it's not explicitly marked as downloadable.
@@ -365,11 +342,11 @@ header.setMode = function (mode) {
 					"#button_nsfw_album, #button_info_album, #button_trash_album, #button_visibility_album, #button_sharing_album_users, #button_move_album"
 				).hide();
 				if (album.isUploadable()) {
-					$(".button_add, .header__divider", ".header__toolbar--album").show();
-					tabindex.makeFocusable($(".button_add, .header__divider", ".header__toolbar--album"));
+					$(".button_add, .header__divider", "#lychee_toolbar_album").show();
+					tabindex.makeFocusable($(".button_add, .header__divider", "#lychee_toolbar_album"));
 				} else {
-					$(".button_add, .header__divider", ".header__toolbar--album").hide();
-					tabindex.makeUnfocusable($(".button_add, .header__divider", ".header__toolbar--album"));
+					$(".button_add, .header__divider", "#lychee_toolbar_album").hide();
+					tabindex.makeUnfocusable($(".button_add, .header__divider", "#lychee_toolbar_album"));
 				}
 				tabindex.makeUnfocusable(
 					$(
@@ -378,8 +355,8 @@ header.setMode = function (mode) {
 				);
 			} else if (albumID === SmartAlbumID.UNSORTED) {
 				$("#button_nsfw_album, #button_info_album, #button_visibility_album, #button_sharing_album_users, #button_move_album").hide();
-				$("#button_trash_album, .button_add, .header__divider", ".header__toolbar--album").show();
-				tabindex.makeFocusable($("#button_trash_album, .button_add, .header__divider", ".header__toolbar--album"));
+				$("#button_trash_album, .button_add, .header__divider", "#lychee_toolbar_album").show();
+				tabindex.makeFocusable($("#button_trash_album, .button_add, .header__divider", "#lychee_toolbar_album"));
 				tabindex.makeUnfocusable(
 					$("#button_nsfw_album, #button_info_album, #button_visibility_album, #button_sharing_album_users, #button_move_album")
 				);
@@ -387,10 +364,10 @@ header.setMode = function (mode) {
 				$("#button_info_album").show();
 				if (sidebar.keepSidebarVisible() && !visible.sidebar()) sidebar.toggle(false);
 				$("#button_move_album").hide();
-				$(".button_add, .header__divider", ".header__toolbar--album").hide();
+				$(".button_add, .header__divider", "#lychee_toolbar_album").hide();
 				tabindex.makeFocusable($("#button_info_album"));
 				tabindex.makeUnfocusable($("#button_move_album"));
-				tabindex.makeUnfocusable($(".button_add, .header__divider", ".header__toolbar--album"));
+				tabindex.makeUnfocusable($(".button_add, .header__divider", "#lychee_toolbar_album"));
 				if (album.isUploadable()) {
 					$("#button_nsfw_album, #button_visibility_album, #button_sharing_album_users, #button_trash_album").show();
 					tabindex.makeFocusable($("#button_nsfw_album, #button_visibility_album, #button_sharing_album_users, #button_trash_album"));
@@ -398,8 +375,8 @@ header.setMode = function (mode) {
 						// This can happen with narrow screens.  In that
 						// case we re-enable the add button which will
 						// contain the overflow items.
-						$(".button_add, .header__divider", ".header__toolbar--album").show();
-						tabindex.makeFocusable($(".button_add, .header__divider", ".header__toolbar--album"));
+						$(".button_add, .header__divider", "#lychee_toolbar_album").show();
+						tabindex.makeFocusable($(".button_add, .header__divider", "#lychee_toolbar_album"));
 					}
 				} else {
 					$("#button_nsfw_album, #button_visibility_album, #button_sharing_album_users, #button_trash_album").hide();
@@ -412,23 +389,23 @@ header.setMode = function (mode) {
 				if (album.isUploadable()) {
 					$(
 						"#button_nsfw_album, #button_trash_album, #button_move_album, #button_visibility_album, #button_sharing_album_users, .button_add, .header__divider",
-						".header__toolbar--album"
+						"#lychee_toolbar_album"
 					).show();
 					tabindex.makeFocusable(
 						$(
 							"#button_nsfw_album, #button_trash_album, #button_move_album, #button_visibility_album, #button_sharing_album_users, .button_add, .header__divider",
-							".header__toolbar--album"
+							"#lychee_toolbar_album"
 						)
 					);
 				} else {
 					$(
 						"#button_nsfw_album, #button_trash_album, #button_move_album, #button_visibility_album, #button_sharing_album_users, .button_add, .header__divider",
-						".header__toolbar--album"
+						"#lychee_toolbar_album"
 					).hide();
 					tabindex.makeUnfocusable(
 						$(
 							"#button_nsfw_album, #button_trash_album, #button_move_album, #button_visibility_album, #button_sharing_album_users, .button_add, .header__divider",
-							".header__toolbar--album"
+							"#lychee_toolbar_album"
 						)
 					);
 				}
@@ -436,49 +413,41 @@ header.setMode = function (mode) {
 
 			// Remove buttons if needed
 			if (!lychee.enable_button_visibility) {
-				const e = $("#button_visibility_album", "#button_sharing_album_users", ".header__toolbar--album");
+				const e = $("#button_visibility_album", "#button_sharing_album_users", "#lychee_toolbar_album");
 				e.remove();
 			}
 			if (!lychee.enable_button_share) {
-				const e = $("#button_share_album", ".header__toolbar--album");
+				const e = $("#button_share_album", "#lychee_toolbar_album");
 				e.remove();
 			}
 			if (!lychee.enable_button_archive) {
-				const e = $("#button_archive", ".header__toolbar--album");
+				const e = $("#button_archive", "#lychee_toolbar_album");
 				e.remove();
 			}
 			if (!lychee.enable_button_move) {
-				const e = $("#button_move_album", ".header__toolbar--album");
+				const e = $("#button_move_album", "#lychee_toolbar_album");
 				e.remove();
 			}
 			if (!lychee.enable_button_trash) {
-				const e = $("#button_trash_album", ".header__toolbar--album");
+				const e = $("#button_trash_album", "#lychee_toolbar_album");
 				e.remove();
 			}
 			if (!lychee.enable_button_fullscreen || !lychee.fullscreenAvailable()) {
-				const e = $("#button_fs_album_enter", ".header__toolbar--album");
+				const e = $("#button_fs_album_enter", "#lychee_toolbar_album");
 				e.remove();
 			}
 			if (!lychee.enable_button_add) {
-				const e = $(".button_add", ".header__toolbar--album");
+				const e = $(".button_add", "#lychee_toolbar_album");
 				e.remove();
 			}
 
 			return;
 
 		case "photo":
-			header.dom().addClass("header--view");
-			header
-				.dom(".header__toolbar--public, .header__toolbar--albums, .header__toolbar--album, .header__toolbar--map, .header__toolbar--config")
-				.removeClass("header__toolbar--visible");
-			header.dom(".header__toolbar--photo").addClass("header__toolbar--visible");
-
-			tabindex.makeFocusable(header.dom(".header__toolbar--photo"));
-			tabindex.makeUnfocusable(
-				header.dom(
-					".header__toolbar--public, .header__toolbar--albums, .header__toolbar--album, .header__toolbar--map, .header__toolbar--config"
-				)
-			);
+			header.dom(".toolbar").removeClass("visible");
+			header.dom("#lychee_toolbar_photo").addClass("visible");
+			tabindex.makeUnfocusable(header.dom(".toolbar"));
+			tabindex.makeFocusable(header.dom("#lychee_toolbar_photo"));
 			// If map is disabled, we should hide the icon
 			if (lychee.publicMode === true ? lychee.map_display_public : lychee.map_display) {
 				const e = $("#button_map");
@@ -533,81 +502,71 @@ header.setMode = function (mode) {
 
 			// Hide buttons if needed
 			if (lychee.publicMode) {
-				const e = $("#button_star", ".header__toolbar--photo");
+				const e = $("#button_star", "#lychee_toolbar_photo");
 				e.hide();
 			} else {
-				const e = $("#button_star", ".header__toolbar--photo");
+				const e = $("#button_star", "#lychee_toolbar_photo");
 				e.show();
 			}
+
 			if (!lychee.enable_button_visibility || lychee.publicMode) {
-				const e = $("#button_visibility", ".header__toolbar--photo");
+				const e = $("#button_visibility", "#lychee_toolbar_photo");
 				e.hide();
 			} else {
-				const e = $("#button_visibility", ".header__toolbar--photo");
+				const e = $("#button_visibility", "#lychee_toolbar_photo");
 				e.show();
 			}
 			if (!lychee.enable_button_share) {
-				const e = $("#button_share", ".header__toolbar--photo");
+				const e = $("#button_share", "#lychee_toolbar_photo");
 				e.hide();
 			} else {
-				const e = $("#button_share", ".header__toolbar--photo");
+				const e = $("#button_share", "#lychee_toolbar_photo");
 				e.show();
 			}
 			if (!lychee.enable_button_move || lychee.publicMode) {
-				const e = $("#button_move", ".header__toolbar--photo");
+				const e = $("#button_move", "#lychee_toolbar_photo");
 				e.hide();
 			} else {
-				const e = $("#button_move", ".header__toolbar--photo");
+				const e = $("#button_move", "#lychee_toolbar_photo");
 				e.show();
 			}
 			if (!lychee.enable_button_trash || lychee.publicMode) {
-				const e = $("#button_trash", ".header__toolbar--photo");
+				const e = $("#button_trash", "#lychee_toolbar_photo");
 				e.hide();
 			} else {
-				const e = $("#button_trash", ".header__toolbar--photo");
+				const e = $("#button_trash", "#lychee_toolbar_photo");
 				e.show();
 			}
 			if (!lychee.enable_button_fullscreen || !lychee.fullscreenAvailable() || lychee.publicMode) {
-				const e = $("#button_fs_enter", ".header__toolbar--photo");
+				const e = $("#button_fs_enter", "#lychee_toolbar_photo");
 				e.hide();
 			} else {
-				const e = $("#button_fs_enter", ".header__toolbar--photo");
+				const e = $("#button_fs_enter", "#lychee_toolbar_photo");
 				e.show();
 			}
 			if (!lychee.enable_button_rotate || lychee.publicMode) {
-				let e = $("#button_rotate_cwise", ".header__toolbar--photo");
+				let e = $("#button_rotate_cwise", "#lychee_toolbar_photo");
 				e.hide();
 
-				e = $("#button_rotate_ccwise", ".header__toolbar--photo");
+				e = $("#button_rotate_ccwise", "#lychee_toolbar_photo");
 				e.hide();
 			} else {
-				let e = $("#button_rotate_cwise", ".header__toolbar--photo");
+				let e = $("#button_rotate_cwise", "#lychee_toolbar_photo");
 				e.show();
 
-				e = $("#button_rotate_ccwise", ".header__toolbar--photo");
+				e = $("#button_rotate_ccwise", "#lychee_toolbar_photo");
 				e.show();
 			}
 			return;
 		case "map":
-			header.dom().removeClass("header--view");
-			header
-				.dom(".header__toolbar--public, .header__toolbar--album, .header__toolbar--albums, .header__toolbar--photo, .header__toolbar--config")
-				.removeClass("header__toolbar--visible");
-			header.dom(".header__toolbar--map").addClass("header__toolbar--visible");
-
-			tabindex.makeFocusable(header.dom(".header__toolbar--map"));
-			tabindex.makeUnfocusable(
-				header.dom(
-					".header__toolbar--public, .header__toolbar--album, .header__toolbar--albums, .header__toolbar--photo, .header__toolbar--config"
-				)
-			);
+			header.dom(".toolbar").removeClass("visible");
+			header.dom("#lychee_toolbar_map").addClass("visible");
+			tabindex.makeUnfocusable(header.dom(".toolbar"));
+			tabindex.makeFocusable(header.dom("#lychee_toolbar_map"));
 			return;
 		case "config":
-			header.dom().addClass("header--view");
-			header
-				.dom(".header__toolbar--public, .header__toolbar--albums, .header__toolbar--album, .header__toolbar--photo, .header__toolbar--map")
-				.removeClass("header__toolbar--visible");
-			header.dom(".header__toolbar--config").addClass("header__toolbar--visible");
+			header.dom(".toolbar").removeClass("visible");
+			header.dom("#lychee_toolbar_config").addClass("visible");
 			return;
 	}
 };
