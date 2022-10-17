@@ -148,7 +148,6 @@ build.album = function (data, disabled = false) {
 			<div class='album ${disabled ? `disabled` : ``} ${data.is_nsfw && lychee.nsfw_blur ? `blurred` : ``}'
 				data-id='${data.id}'
 				data-nsfw='${data.is_nsfw ? `1` : `0`}'
-				data-tabindex='${tabindex.get_next_tab_index()}'
 				draggable='${disableDragDrop ? "false" : "true"}'
 				${
 					disableDragDrop
@@ -221,16 +220,16 @@ build.photo = function (data, disabled = false) {
 		if (isLivePhoto) {
 			thumbnail = `<span class="thumbimg"><img src='img/live-photo-icon.png' alt='${
 				lychee.locale["PHOTO_THUMBNAIL"]
-			}' data-overlay='false' draggable='false' data-tabindex='${tabindex.get_next_tab_index()}'></span>`;
+			}' data-overlay='false' draggable='false'></span>`;
 		}
 		if (isVideo) {
 			thumbnail = `<span class="thumbimg"><img src='img/play-icon.png' alt='${
 				lychee.locale["PHOTO_THUMBNAIL"]
-			}' data-overlay='false' draggable='false' data-tabindex='${tabindex.get_next_tab_index()}'></span>`;
+			}' data-overlay='false' draggable='false'></span>`;
 		} else if (isRaw) {
 			thumbnail = `<span class="thumbimg"><img src='img/placeholder.png' alt='${
 				lychee.locale["PHOTO_THUMBNAIL"]
-			}' data-overlay='false' draggable='false' data-tabindex='${tabindex.get_next_tab_index()}'></span>`;
+			}' data-overlay='false' draggable='false'></span>`;
 		}
 	} else if (lychee.layout === 0) {
 		if (data.size_variants.thumb2x !== null) {
@@ -297,9 +296,7 @@ build.photo = function (data, disabled = false) {
 	}
 
 	html += lychee.html`
-			<div class='photo ${disabled ? `disabled` : ``}' data-album-id='${data.album_id}' data-id='${
-		data.id
-	}' data-tabindex='${tabindex.get_next_tab_index()}'
+			<div class='photo ${disabled ? `disabled` : ``}' data-album-id='${data.album_id}' data-id='${data.id}'
 			draggable='${!album.isUploadable() || disabled ? "false" : "true"}'
 			ondragstart='lychee.startDrag(event)'
 			ondragend='lychee.endDrag(event)'>
@@ -425,13 +422,13 @@ build.imageview = function (data, areControlsVisible, autoplay) {
 	if (data.type.indexOf("video") > -1) {
 		html += lychee.html`<video width="auto" height="auto" id='image' controls class='${areControlsVisible ? "" : "full"}' autobuffer ${
 			autoplay ? "autoplay" : ""
-		} data-tabindex='${tabindex.get_next_tab_index()}'><source src='${
+		}><source src='${
 			data.size_variants.original.url
 		}'>Your browser does not support the video tag.</video>`;
 	} else if (data.type.indexOf("raw") > -1 && data.size_variants.medium === null) {
 		html += lychee.html`<img id='image' class='${
 			areControlsVisible ? "" : "full"
-		}' src='img/placeholder.png' draggable='false' alt='big' data-tabindex='${tabindex.get_next_tab_index()}'>`;
+		}' src='img/placeholder.png' draggable='false' alt='big'>`;
 	} else {
 		let img = "";
 
@@ -458,11 +455,11 @@ build.imageview = function (data, areControlsVisible, autoplay) {
 				img =
 					`<img id='image' class='${areControlsVisible ? "" : "full"}' src='${data.size_variants.medium.url}' ` +
 					medium +
-					`  draggable='false' alt='medium' data-tabindex='${tabindex.get_next_tab_index()}'>`;
+					`  draggable='false' alt='medium'>`;
 			} else {
 				img = `<img id='image' class='${areControlsVisible ? "" : "full"}' src='${
 					data.size_variants.original.url
-				}' draggable='false' alt='big' data-tabindex='${tabindex.get_next_tab_index()}'>`;
+				}' draggable='false' alt='big'>`;
 			}
 		} else {
 			if (data.size_variants.medium !== null) {
@@ -473,14 +470,14 @@ build.imageview = function (data, areControlsVisible, autoplay) {
 					data.size_variants.medium.url
 				}' data-video-src='${
 					data.live_photo_url
-				}'  style='width: ${medium_width}px; height: ${medium_height}px' data-tabindex='${tabindex.get_next_tab_index()}'></div>`;
+				}'  style='width: ${medium_width}px; height: ${medium_height}px'></div>`;
 			} else {
 				// It's a live photo
 				img = `<div id='livephoto' data-live-photo data-proactively-loads-video='true' data-photo-src='${
 					data.size_variants.original.url
 				}' data-video-src='${data.live_photo_url}'  style='width: ${data.size_variants.original.width}px; height: ${
 					data.size_variants.original.height
-				}px' data-tabindex='${tabindex.get_next_tab_index()}'></div>`;
+				}px'></div>`;
 			}
 		}
 

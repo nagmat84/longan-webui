@@ -172,8 +172,6 @@ header.bind_back = function () {
 header.show = function () {
 	lychee.imageview.removeClass("full");
 	header.dom().removeClass("hidden");
-
-	tabindex.restoreSettings(header.dom());
 };
 
 /**
@@ -189,7 +187,6 @@ header.hideIfLivePhotoNotPlaying = function () {
  */
 header.hide = function () {
 	if (visible.photo() && !visible.sidebar() && !visible.contextMenu() && basicModal.isVisible() === false) {
-		tabindex.saveSettings(header.dom());
 		tabindex.makeUnfocusable(header.dom());
 
 		lychee.imageview.addClass("full");

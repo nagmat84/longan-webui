@@ -705,15 +705,15 @@ lychee.loginDialog = function () {
 		<a id='signInKeyLess' class="button"><svg class='iconic'><use xlink:href='#key'/></svg></a>
 		<form class="force-first-child">
 			<div class="input-group stacked">
-				<input class='text' name='username' autocomplete='username' type='text' autocapitalize='off' data-tabindex='${tabindex.get_next_tab_index()}'>
+				<input class='text' name='username' autocomplete='username' type='text' autocapitalize='off'>
 			</div>
 			<div class="input-group stacked">
-				<input class='text' name='password' autocomplete='current-password' type='password' data-tabindex='${tabindex.get_next_tab_index()}'>
+				<input class='text' name='password' autocomplete='current-password' type='password'>
 			</div>
 		</form>
 		<p class='version'>Lychee <span class='version-number'></span><span class="update-status up-to-date"> &#8211; <a target='_blank' href='${
 			lychee.updateURL
-		}' data-tabindex='-1'></a></span></p>
+		}'></a></span></p>
 		`;
 
 	/**
@@ -753,12 +753,10 @@ lychee.loginDialog = function () {
 			action: {
 				title: lychee.locale["SIGN_IN"],
 				fn: lychee.login,
-				attributes: { "data-tabindex": tabindex.get_next_tab_index() },
 			},
 			cancel: {
 				title: lychee.locale["CANCEL"],
 				fn: basicModal.close,
-				attributes: { "data-tabindex": tabindex.get_next_tab_index() },
 			},
 		},
 	});
@@ -923,7 +921,6 @@ lychee.load = function (autoplay = true) {
 
 	contextMenu.close();
 	multiselect.close();
-	tabindex.reset();
 
 	// If Lychee is currently in frame or view mode, we need to re-initialize.
 	// Note, this is a temporary nasty hack.
