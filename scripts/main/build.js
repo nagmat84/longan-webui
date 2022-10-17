@@ -171,7 +171,7 @@ build.album = function (data, disabled = false) {
  * @param {Photo}   data
  * @param {boolean} disabled
  *
- * @returns {string} HTML for the photo
+ * @returns {HTMLDivElement} The HTML `div` element representing the photo
  */
 build.photo = function (data, disabled = false) {
 	let html = "";
@@ -186,105 +186,131 @@ build.photo = function (data, disabled = false) {
 	const isRaw = data.type && data.type.indexOf("raw") > -1;
 	const isLivePhoto = data.live_photo_url !== "" && data.live_photo_url !== null;
 
+	// The general box model for a photo is this
+	//
+	// <div class="photo" data-album-id="..." data-id="..." draggable="true">
+	//   <span class="thumbimg">
+	//     <img class=" lazyloaded" src="..." data-src="..." data-srcset="...">
+	//   </span>
+	//   <div class="overlay">
+	//     <h1 title="...">...</h1>
+	//     <a>...</a>
+	//   </div>
+	//   <div class="badges">
+	//     <a class="badge  icn-..."><svg class="iconic "><use xlink:href="..."></use></svg></a>
+	//     ...
+	//   </div>
+	// </div>
+	//
+	//  1. The whole photo is a `div` which has three sub sections
+	//      - a `span` to hold the actual thumbnail
+	//      - a `div` for the overlay
+	//      - a `div` for the badges
+	//  2. The `span` holds the actual `img` tag with the thumbnail
+	//  3. The first `div` holds the overlay consisting of
+	//      - a `h1` with the title
+	//      - an `a` with the sub title, description, etc.
+	//  4. The second `div` holds the individual badges with each badge
+	//     being an `a` element.
+	//
+	// TODO 1: Find out why we need this additional `span` around the `img`. Can it simplified?
+	// TODO 2: Why do we use link elements `a` for the sub-title in the overlay and the badges? The cannot be clicked, this is semantically wrong.
+	// TODO 3: The whole photo (i.e. the outer `div`) should be an link element `a` instead, because it allows one to open the photo.
+
+	const photoDiv = document.createElement('div');
+	photoDiv.classList.add('photo', disabled ? 'disabled' : '');
+	photoDiv.dataset.id = data.id;
+	photoDiv.dataset.albumId = data.album_id;
+
+	// I. The actual image thumb
+
+	const thumbSpan = photoDiv.appendChild(document.createElement('span'));
+	thumbSpan.classList.add('thumbimg');
+	thumbSpan.draggable = false;
+	const thumbImg = thumbSpan.appendChild(document.createElement('img'));
+	thumbImg.alt = lychee.locale["PHOTO_THUMBNAIL"];
+	thumbImg.draggable = false;
+
 	if (data.size_variants.thumb === null) {
-		if (isLivePhoto) {
-			thumbnail = `<span class="thumbimg"><img src='img/live-photo-icon.png' alt='${
-				lychee.locale["PHOTO_THUMBNAIL"]
-			}' data-overlay='false' draggable='false' data-tabindex='${tabindex.get_next_tab_index()}'></span>`;
-		}
-		if (isVideo) {
-			thumbnail = `<span class="thumbimg"><img src='img/play-icon.png' alt='${
-				lychee.locale["PHOTO_THUMBNAIL"]
-			}' data-overlay='false' draggable='false' data-tabindex='${tabindex.get_next_tab_index()}'></span>`;
-		} else if (isRaw) {
-			thumbnail = `<span class="thumbimg"><img src='img/placeholder.png' alt='${
-				lychee.locale["PHOTO_THUMBNAIL"]
-			}' data-overlay='false' draggable='false' data-tabindex='${tabindex.get_next_tab_index()}'></span>`;
-		}
+		// TODO: What is about the case that the photo is a normal photo but has no thumb image though?
+		if (isLivePhoto) thumbImg.src = 'img/live-photo-icon.png';
+		if (isVideo) thumbImg.src = 'img/play-icon.png';
+		if (isRaw) thumbImg.src = 'img/placeholder.png';
 	} else if (lychee.layout === 0) {
+		// TODO: Why don't we add CSS classes to `thumbSpan` in the first case?
+		if (isLivePhoto) thumbSpan.classList.add('livephoto');
+		if (isVideo) thumbSpan.classList.add('video');
+
+		thumbImg.classList.add('lazyload');
+		thumbImg.src = 'img/placeholder.png';
+		thumbImg.dataset.overlay = "false";
+
+		thumbImg.dataset.src = data.size_variants.thumb.url;
 		if (data.size_variants.thumb2x !== null) {
-			thumb2x = data.size_variants.thumb2x.url;
+			thumbImg.dataset.srcset = data.size_variants.thumb2x.url + " 2x";
 		}
-
-		if (thumb2x !== "") {
-			thumb2x = `data-srcset='${thumb2x} 2x'`;
-		}
-
-		thumbnail = `<span class="thumbimg${isVideo ? " video" : ""}${isLivePhoto ? " livephoto" : ""}">`;
-		thumbnail +=
-			`<img class='lazyload' src='img/placeholder.png' data-src='${data.size_variants.thumb.url}' ` +
-			thumb2x +
-			` alt='${lychee.locale["PHOTO_THUMBNAIL"]}' data-overlay='false' draggable='false' >`;
-		thumbnail += `</span>`;
 	} else {
+		// TODO: Why don't we add CSS classes to `thumbSpan` in the first case?
+		if (isLivePhoto) thumbSpan.classList.add('livephoto');
+		if (isVideo) thumbSpan.classList.add('video');
+
+		thumbImg.classList.add('lazyload');
+		thumbImg.src = 'img/placeholder.png';
+		thumbImg.dataset.overlay = "false";
+
 		if (data.size_variants.small !== null) {
+			thumbImg.dataset.src = data.size_variants.small.url;
 			if (data.size_variants.small2x !== null) {
-				thumb2x = `data-srcset='${data.size_variants.small.url} ${data.size_variants.small.width}w, ${data.size_variants.small2x.url} ${data.size_variants.small2x.width}w'`;
+				thumbImg.dataset.srcset =
+					data.size_variants.small.url + " " + data.size_variants.small.width + "w," +
+					data.size_variants.small2x.url + " " +  data.size_variants.small2x.width + "w";
 			}
-
-			thumbnail = `<span class="thumbimg${isVideo ? " video" : ""}${isLivePhoto ? " livephoto" : ""}">`;
-			thumbnail +=
-				`<img class='lazyload' src='img/placeholder.png' data-src='${data.size_variants.small.url}' ` +
-				thumb2x +
-				` alt='${lychee.locale["PHOTO_THUMBNAIL"]}' data-overlay='false' draggable='false' >`;
-			thumbnail += `</span>`;
 		} else if (data.size_variants.medium !== null) {
+			thumbImg.dataset.src = data.size_variants.medium.url;
 			if (data.size_variants.medium2x !== null) {
-				thumb2x = `data-srcset='${data.size_variants.medium.url} ${data.size_variants.medium.width}w, ${data.size_variants.medium2x.url} ${data.size_variants.medium2x.width}w'`;
+				thumbImg.dataset.srcset =
+					data.size_variants.medium.url + " " + data.size_variants.medium.width + "w," +
+					data.size_variants.medium2x.url + " " +  data.size_variants.medium2x.width + "w";
 			}
-
-			thumbnail = `<span class="thumbimg${isVideo ? " video" : ""}${isLivePhoto ? " livephoto" : ""}">`;
-			thumbnail +=
-				`<img class='lazyload' src='img/placeholder.png' data-src='${data.size_variants.medium.url}' ` +
-				thumb2x +
-				` alt='${lychee.locale["PHOTO_THUMBNAIL"]}' data-overlay='false' draggable='false' >`;
-			thumbnail += `</span>`;
 		} else if (!isVideo) {
 			// Fallback for images with no small or medium.
-			thumbnail = `<span class="thumbimg${isLivePhoto ? " livephoto" : ""}">`;
-			thumbnail += `<img class='lazyload' src='img/placeholder.png' data-src='${data.size_variants.original.url}' alt='${lychee.locale["PHOTO_THUMBNAIL"]}' data-overlay='false' draggable='false' >`;
-			thumbnail += `</span>`;
+			thumbImg.dataset.src = data.size_variants.original.url;
 		} else {
 			// Fallback for videos with no small (the case of no thumb is
 			// handled at the top of this function).
-
+			thumbImg.dataset.src = data.size_variants.thumb.url;
 			if (data.size_variants.thumb2x !== null) {
-				thumb2x = data.size_variants.thumb2x.url;
+				thumbImg.dataset.srcset =
+					data.size_variants.thumb.url + " " + data.size_variants.thumb.width + "w," +
+					data.size_variants.thumb2x.url + " " +  data.size_variants.thumb2x.width + "w";
 			}
-
-			if (thumb2x !== "") {
-				thumb2x = `data-srcset='${data.size_variants.thumb.url} ${data.size_variants.thumb.width}w, ${thumb2x} ${data.size_variants.thumb2x.width}w'`;
-			}
-
-			thumbnail = `<span class="thumbimg video">`;
-			thumbnail +=
-				`<img class='lazyload' src='img/placeholder.png' data-src='${data.size_variants.thumb.url}' ` +
-				thumb2x +
-				` alt='${lychee.locale["PHOTO_THUMBNAIL"]}' data-overlay='false' draggable='false' >`;
-			thumbnail += `</span>`;
 		}
 	}
 
-	html += lychee.html`
-			<div class='photo ${disabled ? `disabled` : ``}' data-album-id='${data.album_id}' data-id='${
-		data.id
-	}' data-tabindex='${tabindex.get_next_tab_index()}'
-			draggable='${!album.isUploadable() || disabled ? "false" : "true"}'
-			ondragstart='lychee.startDrag(event)'
-			ondragend='lychee.endDrag(event)'>
-				${thumbnail}
-				<div class='overlay'>
-					<h1 title='$${data.title}'>$${data.title}</h1>
-			`;
+	// II. The overlay
 
-	if (data.taken_at !== null)
-		html += lychee.html`<a><span title='${lychee.locale["CAMERA_DATE"]}'>${build.iconic("camera-slr")}</span>${lychee.locale.printDateTime(
-			data.taken_at
-		)}</a>`;
-	else html += lychee.html`<a>${lychee.locale.printDateTime(data.created_at)}</a>`;
+	const overlayDiv = photoDiv.appendChild(document.createElement('div'));
+	overlayDiv.classList.add("overlay");
+	overlayDiv.draggable = false;
+	const h1 = overlayDiv.appendChild(document.createElement('h1'));
+	h1.title = data.title;
+	h1.textContent = data.title;
+	h1.draggable = false;
+	const dateA = overlayDiv.appendChild(document.createElement("a"));
+	dateA.draggable = false;
+	if (data.taken_at !== null) {
+		const dateSpan = dateA.appendChild(document.createElement("span"));
+		dateSpan.title = lychee.locale["CAMERA_DATE"];
+		// TODO: Fix this later. We should really not use "innerHTML", but build.iconic should return proper objects, too, instead of an HTML string
+		dateSpan.innerHTML = build.iconic("camera-slr");
+		dateSpan.draggable = false;
+		dateA.appendChild(document.createTextNode(lychee.locale.printDateTime(data.taken_at)));
+	} else {
+		dateA.textContent = lychee.locale.printDateTime(data.created_at);
+	}
 
-	html += `</div>`;
-
+	// III. The badges
+	// TODO: Wjy do we only show badges if album is uploadable?!
 	if (album.isUploadable()) {
 		// Note, `album.json` might be null, if the photo is displayed as
 		// part of a search result and therefore the actual parent album
@@ -293,18 +319,46 @@ build.photo = function (data, disabled = false) {
 		// This also means that the displayed variant of the public badge of
 		// a photo depends on the availability of the parent album.
 		// This seems to be an undesired but unavoidable side effect.
-		html += lychee.html`
-				<div class='badges'>
-				<a class='badge ${data.is_starred ? "badge--star" : ""} icn-star'>${build.iconic("star")}</a>
-				<a class='badge ${data.is_public && album.json && !album.json.is_public ? "badge--visible badge--hidden" : ""} icn-share'>${build.iconic("eye")}</a>
-				<a class='badge ${isCover ? "badge--cover" : ""} icn-cover'>${build.iconic("folder-cover")}</a>
-				</div>
-				`;
+		const badgeDiv =  photoDiv.appendChild(document.createElement('div'));
+		badgeDiv.classList.add("badges");
+		badgeDiv.draggable = false;
+
+		const starBadge = badgeDiv.appendChild(document.createElement("a"));
+		starBadge.classList.add("badge", "icn-star", data.is_starred ? "badge--star" : "");
+		starBadge.draggable = false;
+		starBadge.innerHTML = build.iconic("star"); // TODO: See above, fix this later
+
+		const shareBadge = badgeDiv.appendChild(document.createElement("a"));
+		shareBadge.classList.add("badge", "icn-share");
+		if (data.is_public && album.json && !album.json.is_public) {
+			shareBadge.classList.add("badge--visible", "badge--hidden");
+		}
+		shareBadge.draggable = false;
+		shareBadge.innerHTML = build.iconic("eye"); // TODO: See above, fix this later
+
+		const coverBadge = badgeDiv.appendChild(document.createElement("a"));
+		coverBadge.classList.add("badge", "icn-cover", isCover ? "badge--cover" : "");
+		coverBadge.draggable = false;
+		coverBadge.innerHTML = build.iconic("folder-cover"); // TODO: See above, fix this later
 	}
 
-	html += `</div>`;
+	// Drag & Drop support
+	if (album.isUploadable() && !disabled) {
+		photoDiv.draggable = true;
+		// This line above give leeway for efficiency improvements
+		// An album may contain hundreds of photos, and it is highly inefficient
+		// to add the identical event listeners hundreds of time.
+		// Instead, the event listener should be added to the container,
+		// and we should use the `eventTarget` property of the event to
+		// find out which particular photo triggered the event.
+		// TODO: Fix this
+		photoDiv.addEventListener("dragstart", (e) => lychee.startDrag(e));
+		photoDiv.addEventListener("dragend", (e) => lychee.endDrag(e));
+	} else {
+		photoDiv.draggable = false;
+	}
 
-	return html;
+	return photoDiv;
 };
 
 /**
