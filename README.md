@@ -6,7 +6,7 @@
 #### A great looking and easy-to-use photo-management-system.
 
 *Longan is a fork of Lychee v4.*
-*The original Lychee project is located at [LycheeOrg](https://github.com/LycheeOrg).
+*The original Lychee project is located at [LycheeOrg](https://github.com/LycheeOrg).*
 
 Longan is a free photo-management tool, which runs on your server or web-space.
 Installing is a matter of seconds.
@@ -14,8 +14,10 @@ Upload, manage and share photos like from a native application.
 Longan comes with everything you need and all your photos are stored securely.
 
 Longan is split into two repositories:
+
  - the [Longan Server](https://github.com/nagmat84/longan-server) and
  - the Longan WebUI (this repository).
+
 The Longan Server implements the backend and runs on the web server.
 The Longan WebUI implements the frontend, runs inside the user's browser and interacts with the Longan Server.
 For installation one only needs the Longan Server as the Longan Server includes the Longan WebUI as a submodule.
@@ -62,7 +64,7 @@ npm install
 The Gulpfile is located in `<path to Longan>/Lychee-front/` and can be executed using the `npm run compile` command.
 The generated files will placed into `../dist/` or `<path to Longan>/dist/`.
 
-### :warning: Style formatting
+### Style formatting
 
 Before submitting a pull request, please apply our formatting rules by executing:
 
