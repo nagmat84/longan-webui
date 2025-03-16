@@ -2,10 +2,9 @@
 
 Read the following before reporting a bug on GitHub:
 
-1. Update Lychee to the newest version
-2. Update your browser to the newest version
-3. Take a look in the [FAQ](https://github.com/electerious/Lychee/blob/master/docs/FAQ.md)
-4. Check if someone has [already reported](https://github.com/electerious/Lychee/issues) the same bug
+ 1. Update Longan to the newest version
+ 2. Update your browser to the newest version
+ 3. Check if someone has [already reported a similar issue](https://github.com/nagmat84/Longan-webui/issues)
 
 When reporting a bug on GitHub, make sure you include the following information:
 
@@ -34,4 +33,5 @@ Please follow the conventions already established in the code.
 -   **Comments**:<br>
     Please use single-line comments to annotate significant additions. Use `//` for comments in PHP, JS and CSS.
 
-Merge your changes when the forked branch has been updated in the meanwhile. Make sure your code is 100% working before creating a Pull-Request on GitHub.
+Merge your changes when the forked branch has been updated in the meanwhile.
+Make sure your code is 100% working before creating a Pull-Request on GitHub.
